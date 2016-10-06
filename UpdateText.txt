@@ -1,5 +1,5 @@
 ; PLAYDAY 2 by 0xB0BAFE77
-; [UpdaterInfo]=161006
+; [UpdaterInfo]=161001
 
 /*
 Version: 		Beta
