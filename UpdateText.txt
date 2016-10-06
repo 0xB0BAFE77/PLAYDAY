@@ -1,0 +1,7 @@
+; PLAYDAY 2 by 0xB0BAFE77
+; [UpdaterInfo]=161006
+
+/*
+Version: 		Beta
+Created:		2016-09-20
+Last Updated:	2016-10-04
