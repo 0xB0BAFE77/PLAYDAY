@@ -1,8 +1,8 @@
 ;PLAYDAY 2 by 0xB0BAFE77
-;[UpdaterInfo]=161008.1410
-global	currentVersion	:= 161008.1410
+;[UpdaterInfo]=161008.1505
+global	currentVersion	:= 161008.1505
 
-global	announcement	:= "Thanks for trying out PLAYDAY!`n`nI've put a ton of time, and effort into it and I hope you enjoy it as much as I do.`n`nThis program will be getting regular updates.`n`nCurrently the talent calculator isn't implemented. I skipped it so I could get this out for the Hoxton Housewarming. It's next on the to-do list followed by BLT mod support.`n`nThanks for trying PLAYDAY 2!"
+global	announcement	:= "Thanks for trying out PLAYDAY!`n`nI've put a ton of time and effort into it, and I hope you enjoy it as much as I do.`n`nThis program will be getting regular updates.`n`nCurrently the talent calculator isn't implemented. I skipped it so I could get this out for the Hoxton Housewarming. It's next on the to-do list followed by BLT mod support.`n`nThanks for trying PLAYDAY 2!"
 
 /*
 Created:		2016-09-20
@@ -57,9 +57,6 @@ SendMode, Event
 ; Ensures that the path of the 64-bit Program Files directory is returned if the OS is 64-bit and the script is not.
 SetRegView 64
 
-; Used to add icon to taskbar button and systray (which is hidden)
-Menu, Tray, Icon, images\PLAYDAY 2 Icon.ico
-
 ;del
 GroupAdd, saveReload, %A_ScriptName%
 
@@ -101,8 +98,7 @@ global	guideList		:= "Select Guide:||"
 
 ; Locations
 global	playdayLoc		:= A_ScriptDir
-;global	imagesLoc		:= A_ScriptDir . "\images\"
-global	imagesLoc		:= A_Temp . "\PLAYDAY2\images\"
+global	imagesLoc		:= A_ScriptDir . "\PLAYDAY2 Images\"
 global	playdayTmpLoc	:= A_Temp . "\PLAYDAY2\"
 global	playdayTmpFile	:= A_Temp . "\PLAYDAY2\PLAYDAY2tmp.txt"
 global	playdaySettings	:= A_Temp . "\PLAYDAY2\PLAYDAY2Settings.ini"
@@ -168,21 +164,22 @@ global	graphTextures	:= ""
 global	graphShadows	:= ""
 global	refreshRate		:= ""
 
-;Delete
-global	testURL			:= "https://raw.githubusercontent.com/0xB0BAFE77/PLAYDAY/master/UpdateText.txt"
-
 ; Install pictures. Needed for compiling.
-FileInstall, images\Big Oil Calculator Engine BG.png, %imagesLoc%, 1
-FileInstall, images\Big Oil Engine Calc Logo.png, %imagesLoc%, 1
-FileInstall, images\Folder Open.png, %imagesLoc%, 1
-FileInstall, images\pd2BottomGUI.png, %imagesLoc%, 1
-FileInstall, images\pd2MainGUI.png, %imagesLoc%, 1
-FileInstall, images\pd2RightGUI.png, %imagesLoc%, 1
-FileInstall, images\PLAYDAY 2 Logo.png, %imagesLoc%, 1
+FileCreateDir, % imagesLoc
+FileInstall, PLAYDAY2 Images\Big Oil Calculator Engine BG.png, PLAYDAY2 Images\Big Oil Calculator Engine BG.png, 1
+FileInstall, PLAYDAY2 Images\Big Oil Engine Calc Logo.png, PLAYDAY2 Images\Big Oil Engine Calc Logo.png, 1
+FileInstall, PLAYDAY2 Images\Folder Open.png, PLAYDAY2 Images\Folder Open.png, 1
+FileInstall, PLAYDAY2 Images\pd2BottomGUI.png, PLAYDAY2 Images\pd2BottomGUI.png, 1
+FileInstall, PLAYDAY2 Images\pd2MainGUI.png, PLAYDAY2 Images\pd2MainGUI.png, 1
+FileInstall, PLAYDAY2 Images\pd2RightGUI.png, PLAYDAY2 Images\pd2RightGUI.png, 1
+FileInstall, PLAYDAY2 Images\PLAYDAY 2 Logo.png, PLAYDAY2 Images\PLAYDAY 2 Logo.png, 1
+FileInstall, PLAYDAY2 Images\PLAYDAY2Icon.ico, PLAYDAY2 Images\PLAYDAY2Icon.ico, 1
 
-; Contact info for announcements
+; Contact i1nfo for announcements
 announcement	:= announcement "`n`n========`nContact Info:`nEmail:" A_Tab "0xB0BAFE77@gmail.com`nReddit:" A_Tab "/r/PLAYDAY2" A_Tab "/u/0xB0BAFE77`nSteam:" A_Tab "0xB0BAFE77" A_Tab "Profile ID:76561197967463466)"
 
+; Used to add icon to taskbar button and systray (which is hidden)
+Menu, Tray, Icon, % imagesLoc "PLAYDAY2Icon.ico"
 
 ; If no backup is detected, a backup of the current renderer_settings.xml is made
 BackupRenderer()
@@ -234,7 +231,7 @@ MainGUI:
 	
 	; Background
 	Gui, Main:Add, Picture, x0 y0 w360 h500, % imagesLoc "pd2MainGUI.png"
-
+	
 	; Logo/Title
 	Gui, Main:Add, Picture, x5 y5 w350 h55 , % imagesLoc "PLAYDAY 2 Logo.png"
 
@@ -634,14 +631,6 @@ BigOilUpdate:
 			GuiControl, Font, % "engine" . v
 	}
 return
-/*
-; Syncs GUI windows together
-syncGUI(){
-	WinGetPos, x, y, w, h, PLAYDAY 2
-	WinMove, Big Oil Engine Calculator, , x+w, y
-	WinMove, PD2 Video Settings, , x, y+h
-}
-*/
 
 ; Disables/enables IPHLPAPI.dll if it's present
 DisableIPHLPAPI:
@@ -741,10 +730,6 @@ CrashReport:
 		Run, %playdayTmpLoc%\PD2EZReport.txt
 	else
 		MsgBox, Could not generate crash report.
-return
-
-ResetRenderer:
-	;default renderer_settings.xml to safe settings
 return
 
 OpenPaydayInstall:
@@ -1495,6 +1480,3 @@ Add makeshift BLT mods management.
 
 ; Payday 2 Steam ID:218620
 ;============================== 0xB0BAFE77 ==============================
-;One
-;Two
-;Three extra lines just so I can say it has 1500 lines of code.
