@@ -1,12 +1,10 @@
 ;PLAYDAY 2 by 0xB0BAFE77
-;[UpdaterInfo]=161008.1505
-global	currentVersion	:= 161008.1505
-
+global	currentVersion	:= 161008.2024
 global	announcement	:= "Thanks for trying out PLAYDAY!`n`nI've put a ton of time and effort into it, and I hope you enjoy it as much as I do.`n`nThis program will be getting regular updates.`n`nCurrently the talent calculator isn't implemented. I skipped it so I could get this out for the Hoxton Housewarming. It's next on the to-do list followed by BLT mod support.`n`nThanks for trying PLAYDAY 2!"
-
 /*
 Created:		2016-09-20
 Last Updated:	2016-10-08
+First Version:	160920.0200
 
 My Github:	https://github.com/0xB0BAFE77
 	As of this update, this should be the only place this is getting downloaded from.
@@ -57,7 +55,7 @@ SendMode, Event
 ; Ensures that the path of the 64-bit Program Files directory is returned if the OS is 64-bit and the script is not.
 SetRegView 64
 
-;del
+; Something that saves me a ton of time because I don't have to reload my script every time I save!
 GroupAdd, saveReload, %A_ScriptName%
 
 ; Gets the current install path of PD2
@@ -103,12 +101,15 @@ global	playdayTmpLoc	:= A_Temp . "\PLAYDAY2\"
 global	playdayTmpFile	:= A_Temp . "\PLAYDAY2\PLAYDAY2tmp.txt"
 global	playdaySettings	:= A_Temp . "\PLAYDAY2\PLAYDAY2Settings.ini"
 global	rendererTemp	:= A_Temp . "\PLAYDAY2\renderer_settings_temp.xml"
+global	updater			:= A_Temp . "\PLAYDAY2\PLAYDAYUpdater.exe"
 global	rendererFile	:= A_AppData . "\..\Local\PAYDAY 2\renderer_settings.xml"
 global	crashFile		:= A_AppData . "\..\Local\PAYDAY 2\crash.txt"
 global	fullCrashFile	:= A_AppData . "\..\Local\PAYDAY 2\crashlog.txt"
-global	gitHubURL		:= "https://raw.githubusercontent.com/0xB0BAFE77/PLAYDAY/"
-global	gitHubURLAHK	:= "https://raw.githubusercontent.com/0xB0BAFE77/PLAYDAY/master/PLAYDAY.ahk"
-global	gitHubURLEXE	:= "https://raw.githubusercontent.com/0xB0BAFE77/PLAYDAY/master/PLAYDAY.exe"
+global	gitHubURL		:= "https://github.com/0xB0BAFE77/PLAYDAY"
+global	gitHubURLAHK	:= "https://raw.githubusercontent.com/0xB0BAFE77/PLAYDAY/master/PLAYDAY2.ahk"
+global	gitHubURLEXE	:= "https://github.com/0xB0BAFE77/PLAYDAY/raw/master/PLAYDAY2.exe"
+
+; Guide array allows for easy addition of guides in the future.
 global	guideArray		:= {"The Long Guide (PD2 Bible)":"https://steamcommunity.com/sharedfiles/filedetails/?id=267214370"
 	, "PAYDAY 2 Achievement Guide":"https://steamcommunity.com/sharedfiles/filedetails/?id=394921695"
 	, "Gage Package Locations":"https://klenium.github.io/pd2packages/"
@@ -164,8 +165,11 @@ global	graphTextures	:= ""
 global	graphShadows	:= ""
 global	refreshRate		:= ""
 
-; Install pictures. Needed for compiling.
+; Create necessary directories for pictures and updater to install.
 FileCreateDir, % imagesLoc
+FileCreateDir, % playdayTmpLoc
+
+; Install pictures. Needed for compiling.
 FileInstall, PLAYDAY2 Images\Big Oil Calculator Engine BG.png, PLAYDAY2 Images\Big Oil Calculator Engine BG.png, 1
 FileInstall, PLAYDAY2 Images\Big Oil Engine Calc Logo.png, PLAYDAY2 Images\Big Oil Engine Calc Logo.png, 1
 FileInstall, PLAYDAY2 Images\Folder Open.png, PLAYDAY2 Images\Folder Open.png, 1
@@ -174,27 +178,33 @@ FileInstall, PLAYDAY2 Images\pd2MainGUI.png, PLAYDAY2 Images\pd2MainGUI.png, 1
 FileInstall, PLAYDAY2 Images\pd2RightGUI.png, PLAYDAY2 Images\pd2RightGUI.png, 1
 FileInstall, PLAYDAY2 Images\PLAYDAY 2 Logo.png, PLAYDAY2 Images\PLAYDAY 2 Logo.png, 1
 FileInstall, PLAYDAY2 Images\PLAYDAY2Icon.ico, PLAYDAY2 Images\PLAYDAY2Icon.ico, 1
+FileInstall, PLAYDAYUpdater.exe, % updater, 1
 
-; Contact i1nfo for announcements
+; Adds contact info for announcements
 announcement	:= announcement "`n`n========`nContact Info:`nEmail:" A_Tab "0xB0BAFE77@gmail.com`nReddit:" A_Tab "/r/PLAYDAY2" A_Tab "/u/0xB0BAFE77`nSteam:" A_Tab "0xB0BAFE77" A_Tab "Profile ID:76561197967463466)"
 
 ; Used to add icon to taskbar button and systray (which is hidden)
 Menu, Tray, Icon, % imagesLoc "PLAYDAY2Icon.ico"
 
 ; If no backup is detected, a backup of the current renderer_settings.xml is made
-BackupRenderer()
+; disabled for now.
+; BackupRenderer()
 
 ; Checks to see if user has been notified since update about changes.
 notifiedCheck()
 
+; Self explanitory...
 GetSet(playdayTmpFile, playdaySettings, rendererFile, crashFile, fullCrashFile)
 
+; Checks if user wants auto-close enabled per ini
 gosub, AutoCloseToggle
 
 ; Creates GUI
 gosub, MainGUI
 
 return
+
+; That thing that saves me a bunch of time
 ;============================== Save Reload / Quick Stop ==============================
 #IfWinActive, ahk_group saveReload
 
@@ -217,11 +227,13 @@ return
 
 #IfWinActive
 
+
+
 ;============================== Main Script ==============================
 
 ;==================== GUIS ====================
 
-; ========== Default/Main GUI ==========
+; ========== Main GUI ==========
 MainGUI:
 
 	; GUI Options
@@ -264,7 +276,7 @@ MainGUI:
 	; Updater
 	Gui, Main:Add, Text, BackGroundTrans x180 y135 w160 h20 vguiUpdateTopText, Click "Check For Update" to 
 	Gui, Main:Add, Text, BackGroundTrans x180 y155 w160 h20 vguiUpdateBottomText, see if there's a new version.
-	Gui, Main:Add, Button, x185 y180 w150 h30 gUpdatePLAYDAY vguiCFUButton, Check For Update
+	Gui, Main:Add, Button, x185 y180 w150 h30 gButtonUpdateCheck vguiCFUButton, Check For Update
 	Gui, Main:Add, Text, BackGroundTrans x190 y223 w130 h20 +Right , Enable Auto-Update
 	Gui, Main:Add, Checkbox, x325 y220 w15 h20 gAutoUpdateToggle vautoUpdate ,
 	
@@ -864,115 +876,161 @@ AutoUpdateToggle:
 	if (autoUpdate = 1){
 		autoUpdaterOn	:=	true
 		Sleep, 50
-		
-		; Check for updates every 300000 (5 min)
-		SetTimer, UpdatePLAYDAY, 300000
+		SetTimer, VersionCheck, 300000 ;shloud be 300,000
 	}else{
 		autoUpdaterOn	:=	false
-		SetTimer, UpdatePLAYDAY, Off
+		SetTimer, VersionCheck, Off
 	}
 return
 
-; Program Updater
-UpdatePLAYDAY:
+ButtonUpdateCheck:
+	; Get new file and check version difference.
+	gosub, VersionCheck
 	
-	; Backup current version
-	FileCopy, % A_ScriptFullPath, % A_ScriptFullPath ".bak", 1
-	
+	if (updateIsAvailable = true){
+		MsgBox, 8260, PLAYDAY Updater, An updated version is available!`n`nWould you like to download it?`n`nClick Yes to get the new version or No to continue using this version.
+		
+		; Check if user wants to download.
+		IfMsgBox, No
+			return
+		
+		; Start download process
+		gosub, UpdatePLAYDAY		
+	}else{
+		MsgBox, 8516, PLAYDAY Updater, You have the most current version of PLAYDAY.`n`nWould you like force a reinstall from the web?`n`nClick Yes to force reinstall or No to exit the updater.
+		IfMsgBox, Yes
+			gosub, UpdatePLAYDAY
+		return
+	}
+
+return
+
+VersionCheck:
 	; Get new version source
-	URLDownloadToFile, % gitHubURL, % playdayTmpFile
+	URLDownloadToFile, % gitHubURLAHK, % playdayTmpFile
 	
-	; Check for downloaded copy's version
+	; Check for dow'nloaded copy's version
 	Loop, Read, % playdayTmpFile
 	{
 		; Get version number
-		IfInString, A_LoopReadLine, [UpdaterInfo]=
+		IfInString, A_LoopReadLine, currentVersion
 		{
-			newVersion			:= RegExReplace(A_LoopReadLine, "^.*=", "")
-			newVersionForm		:= "Online Version: " newVersion
+			; Ger version and format it
+			global	newVersion			:= RegExReplace(A_LoopReadLine, "^.*=", "")
+			global	newVersionForm		:= "Online Version: " newVersion
 			
 			; Got what was needed. End loop.
 			break
 		}
-	}
-	
-	; Version comparison and GUI update.
+	}	
+	; Version comparison
 	if (newVersion > currentVersion){
 		GuiControl, Main:, guiUpdateBottomText, % newVersionForm
 		GuiControl, Main:, guiUpdateTopText, There is an update available!
-		
-		; Branch for auto updater
-		if (autoUpdaterOn = true){
-			
-			URLDownloadToFile, % gitHubURLEXE, % A_ScriptFullPath
-			
-			; In case of error
-			if (ErrorLevel = 1){
-				MsgBox, 8240, PLAYDAY Updater, There was a problem updating PLAYDAY.`n`nYou can try reloading the program and running the updater again.`n`nOther causes:`n- GitHub might be doing maintenance or be temporarily down.`n- Your firewall may be blocking the connection.`n`nYou can manually update by visiting the PLAYDAY GitHub page and downloading a fresh copy at:`n`nhttps://github.com/0xB0BAFE77/PLAYDAY
-				GuiControl, Main:, guiUpdateTopText, Update has failed.
-				GuiControl, Main:, guiUpdateBottomText, Please try again.
-				return
-			}else{
-				; Notifies user
-				GuiControl, Main:, guiUpdateTopText, PLAYDAY UPDATED!
-				GuiControl, Main:, guiUpdateBottomText, Click "Reload"!
-				
-				; Replaced "Check For Update" button with a reload button after
-				; the automatic update has completed.
-				Gui, Main:Add, Button, x185 y180 w150 h30 gReloadGUI vguiReloadButton, RELOAD NOW
-				Guicontrol, Main:Hide, guiCFUButton
-				GuiControl, Main:Show, guiReloadButton
-				
-				; Set notified to 0 so next update's notification will show.
-				IniWrite, 0, % playdaySettings, SavedVars, notified
-				
-				; Show button change
-				autoUpdaterOn	:=	false
-				SetTimer, UpdatePLAYDAY, Off
-			}
-			return
-		}
-		
-		; Regular branch taken if auto-update isn't on.
-		MsgBox, 8260, PLAYDAY Updater, An updated version is available!`n`nWould you like to download it?`n`nClick Yes to get the new version or No to continue using this version.
-		
-		; Download Update
-		IfMsgBox, Yes
-		{
-			; Get new file from https://github.com/0xB0BAFE77/PLAYDAY
-			; Replace old program with new
-;Disabled while programming
-;			URLDownloadToFile, % gitHubURL, % A_ScriptFullPath
-			
-			; In case of error
-			if (ErrorLevel = 1){
-				MsgBox, 8240, PLAYDAY Updater, There was a problem updating PLAYDAY.`n`nYou can try reloading the program and running the updater again.`n`nOther causes:`n- GitHub might be doing maintenance or be temporarily down.`n- Your firewall may be blocking the connection.`n`nYou can manually update by visiting the PLAYDAY GitHub page and downloading a fresh copy at:`n`nhttps://github.com/0xB0BAFE77/PLAYDAY
-			}else{
-				MsgBox, 8260, PLAYDAY Updater, Update successful!`n`nWould you like to load the new script?
-				IfMsgBox, Yes
-					Reload
-			}
-			return
-		}else{
-			return
-		}		
+		updateIsAvailable	:= true
+		if (autoUpdaterOn = 1)
+			gosub, UpdatePLAYDAY
 	}else{
 		GuiControl, Main:, guiUpdateTopText, You have the most current
 		GuiControl, Main:, guiUpdateBottomText, version of PLAYDAY.
-		MsgBox, 8516, PLAYDAY Updater, You have the most current version of PLAYDAY.`n`nWould you like force a reinstall of this version?`n`nClick Yes to force reinstall or No to exit the updater.
-		IfMsgBox, Yes
-		{
-			; Get new file from https://github.com/0xB0BAFE77/PLAYDAY
-			; Replace old program with new
-			URLDownloadToFile, % gitHubURL, % A_ScriptFullPath
-			
-			; In case of error
-			if (ErrorLevel = 1){
-				MsgBox, 8240, PLAYDAY Updater, There was a problem reinstalling PLAYDAY.`n`nYou can try reloading the program and running the updater again.`n`nOther causes:`n- GitHub might be doing maintenance or be temporarily down.`n- Your firewall may be blocking the connection.`n`nYou can manually update by visiting the PLAYDAY GitHub page and downloading a fresh copy at:`n`nhttps://github.com/0xB0BAFE77/PLAYDAY
-			}else
-				return
-		}
+		updateIsAvailable	:= false
 	}
+	
+	return
+}
+
+; Program Updater
+UpdatePLAYDAY:
+	
+	; get file extension type (ahk / exe)
+	SplitPath, % A_ScriptFullPath, , , thisExt
+	
+	; .exe path
+	if (thisExt = "exe"){
+		
+		; Get new version exe
+		URLDownloadToFile, % gitHubURLEXE, % playdayTmpLoc A_ScriptName
+		
+		; Warn user if error occurs
+		if (ErrorLevel > 0){
+			MsgBox, 8240, PLAYDAY Updater, There was a problem updating PLAYDAY.`n`nYou can try reloading the program and running the updater again.`n`nOther causes:`n- GitHub might be doing maintenance or be temporarily down.`n- Your firewall may be blocking the connection.`n`nYou can manually update by visiting the PLAYDAY GitHub page and downloading a fresh copy at:`n`nhttps://github.com/0xB0BAFE77/PLAYDAY
+			return
+		}
+		
+		; Make sure PLAYDAYUpdater.exe is present
+		IfNotExist, % updater
+		{
+			MsgBox PLAYDAYUpdater.exe is corrupt or not present!!`n`nThis is a problem because it's packaged into the PLAYDAY executable.`n`nPlease download a fresh copy of PLAYDAY from %gitHubURL%
+				autoUpdaterOn	:=	false
+				SetTimer, UpdatePLAYDAY, Off
+				
+				; Disables the auto update check box due to PLAYDAYUpdater.exe failure.
+				GuiControl, Main:, autoUpdate, -1
+			return
+		}
+		
+		; If all is good, run the PLAYDAYUpdater!
+		; God it took forever to get here...I am not a professional coder. This shit took a while and every bug fixed made 2 more. Going at this shit head on, I still missed my target date of oct 7 for the hox housewarming. Luckily I'm going to be dropping it the tonight, the 8th. Just a little insight into making this (If you're one of those curious people that reads through the code.
+		Run, % updater
+		return
+	}
+	; .ahk path
+	if (thisExt	= "ahk"){
+		
+		; Backup current version
+		FileCopy, % A_ScriptFullPath, % A_ScriptFullPath ".bak", 1
+		
+		; Ensure backup was successful
+		IfNotExist, % A_ScriptFullPath ".bak"
+		{
+			; If backup failed, allow user to end update.
+			MsgBox, 260, Making backup failed.`n`nClick yes to update anyway. Click no to abort and turn off auto-update if it's on.
+			IfMsgBox, No
+			{
+				autoUpdaterOn	:=	false
+				SetTimer, UpdatePLAYDAY, Off
+				return
+			}
+		}
+		
+		; Download new ahk to temp location
+		URLDownloadToFile, % gitHubURLAHK, % A_ScriptFullPath
+		
+		; If there was an error, replace with the backup made
+		if (ErrorLevel = 1){
+			
+			; Restore backuped up copy
+			FileCopy, % A_ScriptFullPath ".bak", % A_ScriptFullPath, 1
+			
+			; Warn user
+			MsgBox, 8240, PLAYDAY Updater, There was a problem updating PLAYDAY.`n`nYou can try reloading the program and running the updater again.`n`nOther causes:`n- GitHub might be doing maintenance or be temporarily down.`n- Your firewall may be blocking the connection.`n`nYou can manually update by visiting the PLAYDAY GitHub page and downloading a fresh copy at:`n`nhttps://github.com/0xB0BAFE77/PLAYDAY
+			
+			; Clean up old file
+			FileDelete, % A_ScriptFullPath ".bak"
+			
+			GuiControl, Main:, guiUpdateTopText, Update has failed.
+			GuiControl, Main:, guiUpdateBottomText, Please try again.
+			return
+		}
+		; If no reload, disable auto updater so user doesn't get annoyed
+		autoUpdaterOn	:=	false
+		SetTimer, UpdatePLAYDAY, Off			
+		
+		; Set notified to 0 so next update's notification will show.
+		IniWrite, 0, % playdaySettings, SavedVars, notified
+		
+		; Replaces "Check For Update" button with a reload button after
+		; the automatic update has completed.
+		Gui, Main:Add, Button, x185 y180 w150 h30 gReloadGUI vguiReloadButton, RELOAD NOW
+		Guicontrol, Main:Hide, guiCFUButton
+		GuiControl, Main:Show, guiReloadButton
+		
+		; Notifies user
+		GuiControl, Main:, guiUpdateTopText, Update downloaded! Click
+		GuiControl, Main:, guiUpdateBottomText, "Reload" to install.
+		return
+	}
+MsgBox Stop for now...
 return
 
 ; Dynamically creates resolution dropdown
@@ -1052,7 +1110,8 @@ return
 _Functions:
 return
 
-;
+; Checks to see if the user has seen the notification popup since update.
+; In the future there will be a "don't show this popup anymore" check box on a custom Popup I've designed.
 notifiedCheck(){
 	
 	if (notified = 0){
