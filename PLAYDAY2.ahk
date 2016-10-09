@@ -1,5 +1,5 @@
 ;PLAYDAY 2 by 0xB0BAFE77
-global	currentVersion	:= 161008.2128
+global	currentVersion	:= 161008.2228
 global	announcement	:= "Thanks for trying out PLAYDAY!`n`nI've put a ton of time and effort into it, and I hope you enjoy it as much as I do.`n`nThis program will be getting regular updates.`n`nCurrently the talent calculator isn't implemented. I skipped it so I could get this out for the Hoxton Housewarming. It's next on the to-do list followed by BLT mod support.`n`nThanks for trying PLAYDAY 2!"
 /*
 Created:		2016-09-20
