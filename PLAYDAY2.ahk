@@ -1,5 +1,5 @@
 ;PLAYDAY 2 by 0xB0BAFE77
-global	currentVersion	:= 161008.2024
+global	currentVersion	:= 161009.2024
 global	announcement	:= "Thanks for trying out PLAYDAY!`n`nI've put a ton of time and effort into it, and I hope you enjoy it as much as I do.`n`nThis program will be getting regular updates.`n`nCurrently the talent calculator isn't implemented. I skipped it so I could get this out for the Hoxton Housewarming. It's next on the to-do list followed by BLT mod support.`n`nThanks for trying PLAYDAY 2!"
 /*
 Created:		2016-09-20
@@ -61,7 +61,6 @@ GroupAdd, saveReload, %A_ScriptName%
 ; Gets the current install path of PD2
 RegRead, installPath, HKLM, SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 218620, InstallLocation
 
-
 ; This label is not actually used and only exists for quick navigation while coding with SciTE4AutoHotkey
 _Variables:
 
@@ -96,7 +95,7 @@ global	guideList		:= "Select Guide:||"
 
 ; Locations
 global	playdayLoc		:= A_ScriptDir
-global	imagesLoc		:= A_ScriptDir . "\PLAYDAY2 Images\"
+global	imagesLoc		:= A_ScriptDir . "\PLAYDAY2 Files\"
 global	playdayTmpLoc	:= A_Temp . "\PLAYDAY2\"
 global	playdayTmpFile	:= A_Temp . "\PLAYDAY2\PLAYDAY2tmp.txt"
 global	playdaySettings	:= A_Temp . "\PLAYDAY2\PLAYDAY2Settings.ini"
@@ -118,6 +117,10 @@ global	guideArray		:= {"The Long Guide (PD2 Bible)":"https://steamcommunity.com/
 	; Creates guide dropdown list
 	For key, value in guideArray
 		guideList	:= guideList key "|"
+
+; Create necessary directories for pictures and updater to install.
+FileCreateDir, % imagesLoc
+FileCreateDir, % playdayTmpLoc
 
 ; User Specific Vars
 IniRead, lastX, %playdaySettings%, SavedVars, lastX
@@ -165,30 +168,29 @@ global	graphTextures	:= ""
 global	graphShadows	:= ""
 global	refreshRate		:= ""
 
-; Create necessary directories for pictures and updater to install.
-FileCreateDir, % imagesLoc
-FileCreateDir, % playdayTmpLoc
 
 ; Install pictures. Needed for compiling.
-FileInstall, PLAYDAY2 Images\Big Oil Calculator Engine BG.png, PLAYDAY2 Images\Big Oil Calculator Engine BG.png, 1
-FileInstall, PLAYDAY2 Images\Big Oil Engine Calc Logo.png, PLAYDAY2 Images\Big Oil Engine Calc Logo.png, 1
-FileInstall, PLAYDAY2 Images\Folder Open.png, PLAYDAY2 Images\Folder Open.png, 1
-FileInstall, PLAYDAY2 Images\pd2BottomGUI.png, PLAYDAY2 Images\pd2BottomGUI.png, 1
-FileInstall, PLAYDAY2 Images\pd2MainGUI.png, PLAYDAY2 Images\pd2MainGUI.png, 1
-FileInstall, PLAYDAY2 Images\pd2RightGUI.png, PLAYDAY2 Images\pd2RightGUI.png, 1
-FileInstall, PLAYDAY2 Images\PLAYDAY 2 Logo.png, PLAYDAY2 Images\PLAYDAY 2 Logo.png, 1
-FileInstall, PLAYDAY2 Images\PLAYDAY2Icon.ico, PLAYDAY2 Images\PLAYDAY2Icon.ico, 1
+FileInstall, PLAYDAY2 Files\Big Oil Calculator Engine BG.png, PLAYDAY2 Files\Big Oil Calculator Engine BG.png, 1
+FileInstall, PLAYDAY2 Files\Big Oil Engine Calc Logo.png, PLAYDAY2 Files\Big Oil Engine Calc Logo.png, 1
+FileInstall, PLAYDAY2 Files\Folder Open.png, PLAYDAY2 Files\Folder Open.png, 1
+FileInstall, PLAYDAY2 Files\pd2BottomGUI.png, PLAYDAY2 Files\pd2BottomGUI.png, 1
+FileInstall, PLAYDAY2 Files\pd2MainGUI.png, PLAYDAY2 Files\pd2MainGUI.png, 1
+FileInstall, PLAYDAY2 Files\pd2RightGUI.png, PLAYDAY2 Files\pd2RightGUI.png, 1
+FileInstall, PLAYDAY2 Files\PLAYDAY 2 Logo.png, PLAYDAY2 Files\PLAYDAY 2 Logo.png, 1
+FileInstall, PLAYDAY2 Files\PLAYDAY2Icon.ico, PLAYDAY2 Files\PLAYDAY2Icon.ico, 1
 FileInstall, PLAYDAYUpdater.exe, % updater, 1
+
+Sleep, 500
 
 ; Adds contact info for announcements
 announcement	:= announcement "`n`n========`nContact Info:`nEmail:" A_Tab "0xB0BAFE77@gmail.com`nReddit:" A_Tab "/r/PLAYDAY2" A_Tab "/u/0xB0BAFE77`nSteam:" A_Tab "0xB0BAFE77" A_Tab "Profile ID:76561197967463466)"
 
-; Used to add icon to taskbar button and systray (which is hidden)
-Menu, Tray, Icon, % imagesLoc "PLAYDAY2Icon.ico"
-
 ; If no backup is detected, a backup of the current renderer_settings.xml is made
 ; disabled for now.
 ; BackupRenderer()
+
+; Used to add icon to taskbar button and systray (which is hidden)
+Menu, Tray, Icon, % imagesLoc "PLAYDAY2Icon.ico"
 
 ; Checks to see if user has been notified since update about changes.
 notifiedCheck()
@@ -835,15 +837,10 @@ VideoSettingsUpdate:
 		}
 		IfInString, tmp, max_anisotropy
 		{
-			MsgBox % tmp
 			anisoTmp	:= vgAnisotropy
-			MsgBox % anisoTmp
 			StringReplace, anisoTmp, anisoTmp, x,
-			MsgBox % anisoTmp
 			tmp	:= RegExReplace(tmp, "value="".*""", "value=""" anisoTmp """")
-			MsgBox % tmp
 			FileAppend, % tmp "`n", % rendererTemp
-			MsgBox stop here!
 			continue
 		}
 		IfInString, tmp, texture_quality_default
@@ -899,7 +896,11 @@ ButtonUpdateCheck:
 	}else{
 		MsgBox, 8516, PLAYDAY Updater, You have the most current version of PLAYDAY.`n`nWould you like force a reinstall from the web?`n`nClick Yes to force reinstall or No to exit the updater.
 		IfMsgBox, Yes
-			gosub, UpdatePLAYDAY
+		{
+			MsgBox, 8516, PLAYDAY Updater, Are you sure?`n`nThere's no good reason to do this unless your version is acting up.
+			IfMsgBox, Yes
+				gosub, UpdatePLAYDAY
+		}
 		return
 	}
 
@@ -935,9 +936,7 @@ VersionCheck:
 		GuiControl, Main:, guiUpdateBottomText, version of PLAYDAY.
 		updateIsAvailable	:= false
 	}
-	
-	return
-}
+return
 
 ; Program Updater
 UpdatePLAYDAY:
@@ -948,8 +947,14 @@ UpdatePLAYDAY:
 	; .exe path
 	if (thisExt = "exe"){
 		
+		global	downloadLoc		:= playdayTmpLoc A_ScriptName
+		
+		; Save current .exe location and downloaded .exe location
+		IniWrite, % A_ScriptFullPath, % playdaySettings, SavedVars, exeLocation
+		IniWrite, % downloadLoc, % playdaySettings, SavedVars, downloadLoc
+		
 		; Get new version exe
-		URLDownloadToFile, % gitHubURLEXE, % playdayTmpLoc A_ScriptName
+		URLDownloadToFile, % gitHubURLEXE, % downloadLoc
 		
 		; Warn user if error occurs
 		if (ErrorLevel > 0){
