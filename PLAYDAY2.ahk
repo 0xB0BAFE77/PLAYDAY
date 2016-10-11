@@ -1,9 +1,9 @@
 ;PLAYDAY 2 by 0xB0BAFE77
-global	currentVersion	:= 161008.2149
-global	announcement	:= "Thanks for trying out PLAYDAY!`n`nI've put a ton of time and effort into it, and I hope you enjoy it as much as I do.`n`nThis program will be getting regular updates.`n`nCurrently the talent calculator isn't implemented. I skipped it so I could get this out for the Hoxton Housewarming. It's next on the to-do list followed by BLT mod support.`n`nThanks for trying PLAYDAY 2!"
+global	currentVersion	:= 161010.2311
+global	announcement	:= "First update is out!!`n`nPer a request from /u/Fault-ee on Reddit, I've added...`n`nWINDOWED BORDERLESS MODE`n`nLook for the button in the new ""Misc"" area.`nIf you encounter any bugs, please let me know!`n`nI've also altered the UI and made room for future buttons. (More goodies?!)`nAdded a ""[What to look for]"" help link on Big Oil Calculator.`n`nThanks for trying PLAYDAY 2!"
 /*
 Created:		2016-09-20
-Last Updated:	2016-10-08
+Last Updated:	2016-10-10
 First Version:	160920.0200
 
 My Github:	https://github.com/0xB0BAFE77
@@ -63,6 +63,9 @@ RegRead, installPath, HKLM, SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\
 
 ; This label is not actually used and only exists for quick navigation while coding with SciTE4AutoHotkey
 _Variables:
+
+; PD2 exe reference
+global	pd2exe	:= "ahk_exe payday2_win32_release.exe"
 
 ; Declaring variables
 global	pd2Running		:= false
@@ -177,6 +180,9 @@ FileInstall, PLAYDAY2 Files\pd2BottomGUI.png, PLAYDAY2 Files\pd2BottomGUI.png, 1
 FileInstall, PLAYDAY2 Files\pd2MainGUI.png, PLAYDAY2 Files\pd2MainGUI.png, 1
 FileInstall, PLAYDAY2 Files\pd2RightGUI.png, PLAYDAY2 Files\pd2RightGUI.png, 1
 FileInstall, PLAYDAY2 Files\PLAYDAY 2 Logo.png, PLAYDAY2 Files\PLAYDAY 2 Logo.png, 1
+FileInstall, PLAYDAY2 Files\BOCalcItemClipboard.jpg, PLAYDAY2 Files\BOCalcItemClipboard.jpg, 1
+FileInstall, PLAYDAY2 Files\BOCalcItemComputer.jpg, PLAYDAY2 Files\BOCalcItemComputer.jpg, 1
+FileInstall, PLAYDAY2 Files\BOCalcItemNotepad.jpg, PLAYDAY2 Files\BOCalcItemNotepad.jpg, 1
 FileInstall, PLAYDAY2 Files\PLAYDAY2Icon.ico, PLAYDAY2 Files\PLAYDAY2Icon.ico, 1
 FileInstall, PLAYDAYUpdater.exe, % updater, 1
 
@@ -229,8 +235,6 @@ return
 
 #IfWinActive
 
-
-
 ;============================== Main Script ==============================
 
 ;==================== GUIS ====================
@@ -262,47 +266,49 @@ MainGUI:
 	; GroupBoxes
 	Gui, Main:Font
 	Gui, Main:Font, s12 c0xDDDDDD bold, Times New Roman
-	
 	Gui, Main:Add, GroupBox, x10 y110 w150 h100, Calculators
-	Gui, Main:Add, GroupBox, x170 y110 w180 h140, Update Info
-	Gui, Main:Add, GroupBox, x10 y260 w180 h120, Guides
-	Gui, Main:Add, GroupBox, x200 y260 w150 h180, Troubleshooting
+	Gui, Main:Add, GroupBox, x170 y110 w180 h125, Update Info
+	Gui, Main:Add, GroupBox, x170 y295 w180 h95, Guides
+	Gui, Main:Add, GroupBox, x10 y390 w340 h65, Troubleshooting
+	Gui, Main:Add, GroupBox, x10 y295 w150 h95, Misc
 	
 	; Calculator
 	Gui, Main:Font, s10 c0xDDDDDD norm
-	
 	Gui, Main:Add, Button, x20 y130 w130 h30 gTalentCalcGUI , Talent Calc
 	Gui, Main:Add, Button, x20 y170 w130 h30 gBigOilCalcToggle , Big Oil Engine Calc
 ;	Gui, Main:Add, Button, x20 y210 w130 h30 , Reserved for future calculator(s)
 	
 	; Updater
-	Gui, Main:Add, Text, BackGroundTrans x180 y135 w160 h20 vguiUpdateTopText, Click "Check For Update" to 
-	Gui, Main:Add, Text, BackGroundTrans x180 y155 w160 h20 vguiUpdateBottomText, see if there's a new version.
-	Gui, Main:Add, Button, x185 y180 w150 h30 gButtonUpdateCheck vguiCFUButton, Check For Update
-	Gui, Main:Add, Text, BackGroundTrans x190 y223 w130 h20 +Right , Enable Auto-Update
-	Gui, Main:Add, Checkbox, x325 y220 w15 h20 gAutoUpdateToggle vautoUpdate ,
-	
-	; Troubleshooting
-	Gui, Main:Add, Checkbox, x210 y297 w15 h20 gDisableIPHLPAPI vmodsEnabled ,
-	Gui, Main:Add, Text, BackGroundTrans x235 y285 w120 h60 , Disable Mods`n( Renames`nIPHLPAPI.dll )
-	Gui, Main:Add, Button, x210 y340 w130 h30 gCrashReport , PD2 EZ Reporter
-	Gui, Main:Add, Checkbox, x210 y375 w15 h20 vallCrashLogs ,
-	Gui, Main:Add, Text, BackGroundTrans x230 y377 w100 h30 , ALL crash logs?
-	Gui, Main:Add, Button, x210 y400 w130 h30 gVideoSettingsToggle, Edit Video Settings
+	Gui, Main:Add, Text, BackGroundTrans x180 y130 w160 h20 vguiUpdateTopText, Click "Check For Update" to 
+	Gui, Main:Add, Text, BackGroundTrans x180 y150 w160 h20 vguiUpdateBottomText, see if there's a new version.
+	Gui, Main:Add, Button, x185 y170 w150 h30 gButtonUpdateCheck vguiCFUButton, Check For Update
+	Gui, Main:Add, Text, BackGroundTrans x190 y210 w130 h20 +Right , Enable Auto-Update
+	Gui, Main:Add, Checkbox, x325 y210 w15 h15 gAutoUpdateToggle vautoUpdate ,
 	
 	; Guides
-	Gui, Main:Add, DropDownList, x20 y280 w160 h30 r10 gAutoOpenGuide vguiGuideList,
-	Gui, Main:Add, Button, x100 y315 w80 h30 gOpenGuide, Open Guide
-	Gui, Main:Add, Text, BackGroundTrans x45 y353 w140 h30 , Open Guide On Click
-	Gui, Main:Add, Checkbox, x165 y350 w15 h20 gAutoOpenGuideCheck vguiAutoOpenGuide ,
-	
+	Gui, Main:Add, DropDownList, x180 y320 w160 h30 r10 gAutoOpenGuide vguiGuideList,
+	Gui, Main:Add, Button, x180 y350 w80 h30 gOpenGuide, Open Guide
+	Gui, Main:Add, Text, BackGroundTrans x270 y349 w75 h30 , Open Guide`nOn Click
+	Gui, Main:Add, Checkbox, x325 y365 w15 h15 gAutoOpenGuideCheck vguiAutoOpenGuide ,
+
+	; Troubleshooting
+	Gui, Main:Add, Button, x20 y415 w100 h30 gCrashReport , PD2 EZ Reporter
+	Gui, Main:Add, Text, BackGroundTrans x141 y410 w100 h30 , ALL crash logs?
+	Gui, Main:Add, Checkbox, x127 y410 w15 h15 vallCrashLogs ,
+	Gui, Main:Add, Text, BackGroundTrans x143 y430 w120 h60 , Disable Mods
+	Gui, Main:Add, Checkbox,  x127 y430 w15 h15 gDisableIPHLPAPI vmodsEnabled ,
+	Gui, Main:Add, Button, x240 y410 w100 h35 gVideoSettingsToggle, Edit Video Settings
+
 	; Browse / Close / Minimize
-	Gui, Main:Add, Picture, x10 y390 w50 h50 gOpenPaydayInstall , % imagesLoc "folder open.png"
-	Gui, Main:Add, Button, x60 y400 w130 h30 gOpenPaydayInstall , Browse PAYDAY 2`nInstall Folder
-	Gui, Main:Add, Button, x15 y455 w120 h30 gMinimizeGui, Minimize
-	Gui, Main:Add, Text, BackGroundTrans x90 y455 w160 h30 +Right , Close Script When`nPAYDAY 2 Closes
-	Gui, Main:Add, Checkbox, x255 y460 w15 h20 gAutoCloseToggle vexitOnExit,
-	Gui, Main:Add, Button, x285 y455 w60 h30 gQuit, Exit
+;	Gui, Main:Add, Picture, x10 y320 w50 h50 gOpenPaydayInstall , % imagesLoc "folder open.png"
+	Gui, Main:Add, Button, x20 y315 w130 h30 gWindowedBorderlessMode , Borderless Window Mode
+	Gui, Main:Add, Button, x20 y350 w130 h30 gOpenPaydayInstall , Browse PAYDAY 2`nInstall Folder
+	
+	; Bottom Bar
+	Gui, Main:Add, Button, x10 y460 w120 h30 gMinimizeGui, Minimize
+	Gui, Main:Add, Text, BackGroundTrans x90 y460 w160 h30 +Right , Close Script When`nPAYDAY 2 Closes
+	Gui, Main:Add, Checkbox, x255 y465 w15 h20 gAutoCloseToggle vexitOnExit,
+	Gui, Main:Add, Button, x290 y460 w60 h30 gQuit, Exit
 	
 	; Set user prefernces
 	GuiControl, Main:, guiGuideList, % guideList
@@ -334,7 +340,7 @@ BigOilCalcGUI:
 	rightGUIY	:= mainGUIY
 
 	; GUI Options
-	Gui, RightGUI:Color, 000044
+	Gui, RightGUI:Color, 0x000044
 	Gui, RightGUI:+Border -Caption +OwnerMain +HwndRG
 	
 	; Background
@@ -369,11 +375,12 @@ BigOilCalcGUI:
 	Gui, RightGUI:Add, Radio, gBigOilUpdate x260 y130 w80 h30 , %ltEql% 5812
 
 	; Help Text
-	Gui, RightGUI:Add, Text, x250 y170 w90 h50 , What Am I`nLooking For??
+	Gui, RightGUI:Font, c%pdBlue% s10 bold, Arial
+	Gui, RightGUI:Add, Text, x210 y205 w140 h30 gBigOilItemsHelpGUI +Right , [What to look for]
 
 	; Middle Title
 	Gui, RightGUI:Font, c0xDDDDDD s16 bold, Arial
-	Gui, RightGUI:Add, Text, x20 y200 h30 +Center , Possible Engines
+	Gui, RightGUI:Add, Text, x20 y200 h30 +Left , Possible Engines
 
 	; Basement Map
 	Gui, RightGUI:Add, Picture, x10 y230 w340 h220, % imagesLoc "Big Oil Calculator Engine BG.png"
@@ -403,7 +410,10 @@ BigOilCalcGUI:
 	
 	Gui, RightGUI:Font
 	Gui, RightGUI:Add, Button, gCloseRightGUI x250 y460 w100 h30 , Close
-
+	
+	; Sets help screen to off by default
+	bigOilhelpToggle	:= 0
+	
 	Gui, RightGUI:Show, w360 h500 x%rightGUIX% y%rightGUIY% , Big Oil Engine Calculator
 return
 
@@ -437,7 +447,7 @@ VideoSettingsGUI:
 	Gui, BottomGUI:Add, Radio, x20 y80 w80 h20 vvgFullscreen, Fullscreen
 
 	; Refresh Rate
-	Gui, BottomGUI:Add, GroupBox, x10 y110 w120 h60, Refresh Rate
+	Gui, BottomGUI:Add, GroupBox, x10 y110 w120 h60, Refresh Rate / FPS
 	Gui, BottomGUI:Add, DropDownList, x20 y135 w100 h20 r10 vvgRR ,
 	
 	; VSync
@@ -476,6 +486,71 @@ return
 
 ;========== End Video Settings GUI ==========
 
+;========== HELP GUI TEMPLATE==========
+HelpGUI:
+	Gui, HELPGUI:Destroy
+	
+	; Get coords of playday GUI to get x/y for Big Oil Calc
+	WinGetPos, x, y, w, h, PLAYDAY 2
+
+	helpGUIX	:= x + w
+	helpGUIY	:= y + h
+
+	; GUI Options
+	Gui, HELPGUI:Color, 0x000000
+	Gui, HELPGUI:+Border -Caption +OwnerMain +HwndHG
+	
+	; Background
+	Gui, HELPGUI:Add, Picture, x0 y0 w360 h180 , % imagesLoc "pd2BottomGUI.png"
+
+	Gui, HELPGUI:Show, w360 h180 x%helpGUIX% y%helpGUIY% , PD2 HELP
+return
+;========== End HELP GUI ==========
+
+;========== 
+BigOilItemsHelpGUI:
+	; Toggle
+	bigOilhelpToggle := !bigOilhelpToggle
+	
+	;
+	if (bigOilhelpToggle = 1){
+		; Clear any help gui that may be up
+		Gui, HELPGUI:Destroy
+		
+		; Get coords of playday GUI to get x/y for Big Oil Calc
+		WinGetPos, x, y, w, h, PLAYDAY 2
+		
+		helpGUIX	:= x + w
+		helpGUIY	:= y + h
+		
+		; GUI Options
+		Gui, HELPGUI:Color, 0x000000
+		Gui, HELPGUI:+Border -Caption +OwnerMain +HwndHG
+		
+		; Background
+		Gui, HELPGUI:Add, Picture, x0 y0 w360 h180 , % imagesLoc "pd2BottomGUI.png"
+		
+		; Help pictures
+		; pics 110x110
+		Gui, HELPGUI:Font, c0xDDDDDD s10 bold
+		Gui, HELPGUI:Add, GroupBox, x5 y5 w345 h165 , Find these sitting around the house.
+		
+		Gui, HELPGUI:Add, Picture, x15 y25 w105 h105 , % imagesLoc "BOCalcItemNotepad.jpg"
+		Gui, HELPGUI:Add, Picture, x125 y25 w105 h105 , % imagesLoc "BOCalcItemClipboard.jpg"
+		Gui, HELPGUI:Add, Picture, x235 y25 w105 h105 , % imagesLoc "BOCalcItemComputer.jpg"
+		
+		Gui, HELPGUI:Font, c0xDDDDDD s10 norm
+		Gui, HELPGUI:Add, Text, x15 y130 w105 h35, Notepad has`ngas name.
+		Gui, HELPGUI:Add, Text, x125 y130 w105 h35, Clipgoard has`nH number.
+		Gui, HELPGUI:Add, Text, x235 y130 w105 h35, Computer has`npressure.
+		
+		Gui, HELPGUI:Show, w360 h180 x%helpGUIX% y%helpGUIY% , PD2 HELP
+	}else
+		Gui, HELPGUI:Destroy
+return
+
+
+
 ;========== Talent Calc GUI ==========
 TalentCalcGUI:
 	MsgBox Not complete yet.`n`nIt's next on the "to-do" list. Creating a talent calculator from scratch is a TON of work and I left this project for last because of how long I knew it would take. I took that time and instead put it toward getting everything else created and out in time for the Hoxton Housewarming.`n`nThe calculator WILL get finished and released.`n`nKeep clicking that "Check for update" button or enable Auto-Update.`n`nThanks for using PLAYDAY!`n`n-0xB0BAFE77
@@ -494,9 +569,64 @@ Docking:
 	
 	; Wait for Left Mouse to be released then wait 50ms
 	KeyWait, LButton
-	Sleep, 100
+	Sleep, 75
+	Loop, 4
+	{		
+		if (currentX%A_Index% != lastX%A_Index%) || (currentY%A_Index% != lastY%A_Index%){
+			; Main GUI
+			if (A_Index = 1){
+				
+				newX%A_Index% 	:= currentX%A_Index% + W%A_Index%
+				newY%A_Index% 	:= currentY%A_Index% + H%A_Index%
+				
+				WinMove, ahk_id %RG%, , % newX%A_Index% , % currentY%A_Index%
+				WinMove, ahk_id %BG%, , % currentX%A_Index% , % newY%A_Index%
+				WinMove, ahk_id %HG%, , % newX%A_Index% , % newY%A_Index% 
+			}
+			; Right GUI
+			if (A_Index = 2){
+				
+				newX%A_Index% 	:= currentX%A_Index% - W1
+				newY%A_Index% 	:= currentY%A_Index% + H1
+				
+				WinMove, ahk_id %MG%, , % newX%A_Index% , % currentY%A_Index%
+				WinMove, ahk_id %BG%, , % newX%A_Index% , % newY%A_Index%
+				WinMove, ahk_id %HG%, , % currentX%A_Index% , % newY%A_Index% 
+			}
+			; Bottom GUI
+			if (A_Index = 3){
+				
+				newX%A_Index% 	:= currentX%A_Index% + W1
+				newY%A_Index% 	:= currentY%A_Index% - H1
+				
+				WinMove, ahk_id %MG%, , % currentX%A_Index% , % newY%A_Index%
+				WinMove, ahk_id %RG%, , % newX%A_Index% , % newY%A_Index%
+				WinMove, ahk_id %HG%, , % newX%A_Index% , % currentY%A_Index% 
+			}
+			; Help GUI
+			if (A_Index = 4){
+				
+				newX%A_Index% 	:= currentX%A_Index% - W1
+				newY%A_Index% 	:= currentY%A_Index% - H1
+				
+				WinMove, ahk_id %MG%, , % newX%A_Index% , % newY%A_Index%
+				WinMove, ahk_id %RG%, , % currentX%A_Index% , % newY%A_Index%
+				WinMove, ahk_id %BG%, , % newX%A_Index% , % currentY%A_Index% 
+			}
+			; Save last
+			GetGUIPos()
+			SetLastPos()
+			Sleep, 50
+			IniWrite, % lastX1, % playdaySettings, SavedVars, lastX
+			IniWrite, % lastY1, % playdaySettings, SavedVars, lastY
+		}
+	}
 	
-	; If main gui moves, adjust bottom and right
+
+
+; Uncompressed original code.
+/*	
+	; If main gui moves
 	if (currentX1 != lastX1) || (currentY1 != lastY1){
 		newX1	:= currentX1 + W1
 		newY1	:= currentY1 + H1
@@ -510,7 +640,7 @@ Docking:
 		return
 	}
 	
-	; If right gui moves, adjust bottom and main
+	; If right gui moves
 	if (currentX2 != lastX2) || (currentY2 != lastY2){
 		newX2	:= currentX2 - W1
 		newY2	:= currentY2 + H1
@@ -524,7 +654,7 @@ Docking:
 		return
 	}
 	
-	; If bottom gui moves, adjust main and right
+	; If bottom gui moves
 	if (currentX3 != lastX3) || (currentY3 != lastY3){
 		newX3	:= currentX3 + W1
 		newY3	:= currentY3 - H1
@@ -536,7 +666,22 @@ Docking:
 		IniWrite, % lastX1, % playdaySettings, SavedVars, lastX
 		IniWrite, % lastY1, % playdaySettings, SavedVars, lastY
 		return
+		
+	; If help gui moves
+	if (currentX4 != lastX4) || (currentY4 != lastY4){
+		newX4	:= currentX4 - W1
+		newY4	:= currentY4 - H1
+		WinMove, ahk_id %MG%, , %currentX3%, %newY3%
+		WinMove, ahk_id %RG%, , %newX3%, %newY3%
+		GetGUIPos()
+		SetLastPos()
+		Sleep, 50
+		IniWrite, % lastX1, % playdaySettings, SavedVars, lastX
+		IniWrite, % lastY1, % playdaySettings, SavedVars, lastY
+		return
 	}
+*/
+
 return
 
 ; Toggles Big Oil Calc when button is pressed
@@ -560,6 +705,7 @@ return
 ; Close Right GUI
 CloseRightGUI:
 	Gui, RightGUI:Destroy
+	Gui, HelpGUI:Destroy
 	rightGUIActive	:= false
 return
 
@@ -586,6 +732,7 @@ BigOilUpdate:
 	Gui, RightGUI:Submit, NoHide
 
 	Gui, RightGUI:Font, c0xDDDDDD s18 norm, Impact
+	
 	Loop, 12
 		GuiControl, Font, engine%A_Index%	
 
@@ -617,14 +764,14 @@ BigOilUpdate:
 			GuiControl, Font, % "engine" . v
 	}
 
-	; If 1 nozzle (2 x H)
+	; If 2 nozzles (2 x H)
 	if (nozzleGUI = 3){
 		Gui, RightGUI:Font, c%bgc%
 		for i, v in nozzles2GUI
 			GuiControl, Font, % "engine" . v
 	}
 
-	; If 1 nozzle (3 x H)
+	; If 3 nozzles (3 x H)
 	if (nozzleGUI = 4){
 		Gui, RightGUI:Font, c%bgc%
 		for i, v in nozzles3GUI
@@ -1035,21 +1182,22 @@ UpdatePLAYDAY:
 		GuiControl, Main:, guiUpdateBottomText, "Reload" to install.
 		return
 	}
-MsgBox Stop for now...
 return
 
 ; Dynamically creates resolution dropdown
 MakeGUIResList:
-	
+
 	; Make new list
 	guiResList		:= ""
 	; Remove quotation marks
 	StringReplace, resolutionTMP, resolution,",, All
 	; Replace the space separator with an x for comparison below
 	StringReplace, resolutionTMP, resolutionTMP,%A_Space%,x
+	
 	Loop, Read, % playdayTmpFile
 	{
 		tmp		:= A_LoopReadLine
+		
 		; Skip start title
 		IfInString, tmp, [Resolutions Start]
 			continue
@@ -1062,6 +1210,7 @@ MakeGUIResList:
 		IfInString, tmp, % resolutionTMP
 			tmp		:= tmp . "|"
 		guiResList	:= guiResList . tmp . "|"
+		
 	}
 	GuiControl, BottomGUI:, vgRes, % guiResList
 return
@@ -1109,6 +1258,50 @@ ExitApp
 ; Used for testing
 Test:
 	MsgBox % allCrashLogs
+return
+
+WindowedBorderlessMode:
+	
+	; Check if PD2 is running
+	IfWinNotExist, % pd2exe
+	{
+		MsgBox, PAYDAY 2 doesn't appear to be running.
+		return
+	}
+
+	; Check renderer to see if still in fullscreen
+	Loop, Read, % rendererFile
+	{
+		tmp	:= A_LoopReadLine
+		
+		; If still full screen, warn user and break
+		IfInString, tmp, windowed =
+		{
+			IfInString, tmp, false
+			{
+				MsgBox Your game is still in fullscreen mode.
+				return
+			}
+			break
+		}
+	}
+	
+	; If windowed...
+	; Get monitor width and height to make resolution
+	SysGet, monitorW, 0
+	SysGet, monitorH, 1
+
+	; Get PD2 positions
+	WinGetPos , pd2X, pd2Y, pd2W, pd2H, % pd2exe
+	
+	; Find the halfway point to center window
+	pd2X	:= Floor((pd2W - monitorW) / 2)
+	pd2Y	:= Floor((pd2H - monitorH) / 2)
+
+	; Remove border and set game screen to center position
+	WinSet, Style, -0xC40000, % pd2exe
+	WinMove, % pd2exe, , % "-" pd2X, % "-" pd2Y
+
 return
 
 ; This label is not actually used and only exists for quick navigation while coding with SciTE4AutoHotkey
@@ -1161,6 +1354,7 @@ GetGUIPos(){
 	WinGetPos, currentX1, currentY1, W1, H1, ahk_id %MG%
 	WinGetPos, currentX2, currentY2, , , ahk_id %RG%
 	WinGetPos, currentX3, currentY3, , , ahk_id %BG%
+	WinGetPos, currentX4, currentY4, , , ahk_id %HG%
 }
 
 ; Set positions last known locations for all GUIs.
@@ -1173,6 +1367,8 @@ SetLastPos(){
 	lastY2	:= currentY2
 	lastX3	:= currentX3
 	lastY3	:= currentY3
+	lastX4	:= currentX4
+	lastY4	:= currentY4
 }
 
 ; Get current settings
@@ -1436,6 +1632,14 @@ PaysteDay(cb){
 /*
 ;============================== Notes/Changes/Etc ==============================
 ========== Changle Log ==========
+v. Beta - v161010.2200
+	Updated GUI. Rearranged and tightned buttons to make room for future features
+	Added windowed borderless support to the game per a suggestion from /u/Fault-ee. Should work regardless of resolution
+	Added help link to Big Oil Calculator to show what items should be looked for
+	Minore updates
+	Optimized code
+	Updated PLAYDAYUpdater.exe to delete backups if install is successful
+	
 v. Beta - v161006
 	Completed Features:
 		PAYDAY 2 Launcher
